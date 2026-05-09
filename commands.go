@@ -108,7 +108,7 @@ func handleList(cfg *Config) {
 		if headerPrinted {
 			fmt.Println()
 		}
-		fmt.Printf("%s\n", f)
+		fmt.Printf("%s\n", filepath.Base(f))
 		if !headerPrinted {
 			printHeader()
 			headerPrinted = true
