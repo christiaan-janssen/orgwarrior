@@ -14,6 +14,7 @@ After all the hype about vibecoding, I thought to give it a try. I love Taskwarr
 - **completed** — show tasks completed this week (also `comp`)
 - **Filters** — `tag:work`, `due:before:2026-07-01`, `due:after:2026-06-01`, `sched:before:...`
 - **Colors** — past dates in red, future dates in green, file headers in cyan (auto-detects terminal)
+- **Date format** — configurable `date_format` (YYYY-MM-DD, DD-MM-YYYY, MM-DD-YYYY) for input and display
 - File grouping with per-file headers
 - Parses `DEADLINE`, `SCHEDULED` (inline and on following lines)
 - Parses org tags (`:tag1:tag2:`)
@@ -57,13 +58,15 @@ Auto-created at `~/.config/orgwarrior/config.json`:
 {
   "paths": ["~/org/"],
   "default_file": "~/org/inbox.org",
-  "files": ["inbox.org", "agenda.org"]
+  "files": ["inbox.org", "agenda.org"],
+  "date_format": "YYYY-MM-DD"
 }
 ```
 
-| Field          | Description                                        |
-| -------------- | -------------------------------------------------- |
-| `paths`             | Directories or files to scan for .org files        |
-| `default_file`      | Where `add` appends new tasks                      |
-| `files`             | Which .org basenames to display (empty = show all) |
-| `done_lookback_days`| Days to look back for completed tasks (default 7)  |
+| Field               | Description                                              |
+| ------------------- | -------------------------------------------------------- |
+| `paths`             | Directories or files to scan for .org files              |
+| `default_file`      | Where `add` appends new tasks                            |
+| `files`             | Which .org basenames to display (empty = show all)       |
+| `done_lookback_days`| Days to look back for completed tasks (default 7)        |
+| `date_format`       | Date input/display format (YYYY-MM-DD, DD-MM-YYYY, MM-DD-YYYY) |

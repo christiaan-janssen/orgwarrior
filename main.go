@@ -90,12 +90,16 @@ Commands:
   delete <id>       Remove a task (also: del)
   completed         Show recently completed tasks (also: complete, comp)
 
+Configuration (~/.config/orgwarrior/config.json):
+  date_format    Date display/input format (YYYY-MM-DD, DD-MM-YYYY, MM-DD-YYYY)
+                 Default: YYYY-MM-DD
+
 Filters (applied to list):
   tag:work            Filter by tag (comma-separated for OR)
-  due:before:YYYY-MM-DD  Tasks with deadline before a date
-  due:after:YYYY-MM-DD   Tasks with deadline after a date
-  sched:before:...       Filter by scheduled date
-  sched:after:...        Filter by scheduled date
+  due:before:DATE     Tasks with deadline before a date
+  due:after:DATE      Tasks with deadline after a date
+  sched:before:DATE   Filter by scheduled date
+  sched:after:DATE    Filter by scheduled date
 
 Examples:
   orgwarrior

@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"time"
 )
 
 const (
@@ -66,32 +65,4 @@ func magenta(s string) string {
 	return ansiMagenta + s + ansiReset
 }
 
-// dateColor returns a colorized date string. Green if future/upcoming,
-// red if past/overdue.
-func dateColor(s string) string {
-	if s == "" || !useColor {
-		return s
-	}
-	parts := timeParts(s)
-	if parts == "" {
-		return s
-	}
-	t, err := time.Parse("2006-01-02", parts)
-	if err != nil {
-		return s
-	}
-	if t.Before(time.Now().Truncate(24 * time.Hour)) {
-		return red(s)
-	}
-	return green(s)
-}
 
-// timeParts extracts the first space-separated token from s.
-func timeParts(s string) string {
-	for i, c := range s {
-		if c == ' ' || c == '\t' {
-			return s[:i]
-		}
-	}
-	return s
-}

@@ -34,7 +34,7 @@ func collectTodos(cfg *Config) ([]Todo, []string) {
 // It parses due:, sched:, and tags: from the argument list.
 func handleAdd(cfg *Config, args []string) {
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, "usage: orgwarrior add <title> [due:YYYY-MM-DD] [sched:YYYY-MM-DD] [tags:tag1,tag2]")
+		fmt.Fprintln(os.Stderr, "usage: orgwarrior add <title> [due:DATE] [sched:DATE] [tags:tag1,tag2]")
 		os.Exit(1)
 	}
 
@@ -53,6 +53,23 @@ func handleAdd(cfg *Config, args []string) {
 	}
 
 	title := strings.Join(titleParts, " ")
+
+	if due != "" {
+		t, err := parseDate(due, cfg.DateFormat)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "invalid due date %q (expected %s format)\n", due, cfg.DateFormat)
+			os.Exit(1)
+		}
+		due = t.Format("2006-01-02")
+	}
+	if sched != "" {
+		t, err := parseDate(sched, cfg.DateFormat)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "invalid sched date %q (expected %s format)\n", sched, cfg.DateFormat)
+			os.Exit(1)
+		}
+		sched = t.Format("2006-01-02")
+	}
 
 	orgTags := ""
 	if tags != "" {
@@ -103,14 +120,14 @@ func handleList(cfg *Config, filterArgs []string) {
 	}
 	todos = filtered
 
-	todos = applyFilters(todos, filterArgs)
+	todos = applyFilters(todos, filterArgs, cfg.DateFormat)
 
 	if len(todos) == 0 {
 		fmt.Fprintln(os.Stderr, "no tasks match")
 		return
 	}
 
-	idW, titleW, tagsW, schedW, deadW := colWidths(todos)
+	idW, titleW, tagsW, schedW, deadW := colWidths(todos, cfg.DateFormat)
 
 	pad := "   "
 	printHeader := func() {
@@ -141,8 +158,10 @@ func handleList(cfg *Config, filterArgs []string) {
 			printHeader()
 		}
 		for _, t := range ft {
-			sched := dateColor(t.Scheduled)
-			dead := dateColor(t.Deadline)
+			schedDisplay := formatDateDisplay(t.Scheduled, cfg.DateFormat)
+			deadDisplay := formatDateDisplay(t.Deadline, cfg.DateFormat)
+			sched := colorDate(t.Scheduled, schedDisplay)
+			dead := colorDate(t.Deadline, deadDisplay)
 			fmt.Printf("%-*d%s%-*s%s%-*s%s%-*s%s%s\n", idW, idx, pad, titleW, t.Title, pad, tagsW, t.Tags, pad, schedW, sched, pad, dead)
 			idx++
 		}
@@ -209,7 +228,7 @@ func handleDone(cfg *Config, args []string) {
 // handleModify updates an existing task by ID (1-based, from the list output).
 func handleModify(cfg *Config, args []string) {
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, "usage: orgwarrior modify <id> [title] [due:YYYY-MM-DD] [sched:YYYY-MM-DD] [tags:tag1,tag2]")
+		fmt.Fprintln(os.Stderr, "usage: orgwarrior modify <id> [title] [due:DATE] [sched:DATE] [tags:tag1,tag2]")
 		os.Exit(1)
 	}
 
@@ -247,6 +266,23 @@ func handleModify(cfg *Config, args []string) {
 		}
 	}
 	hasTitle := len(titleParts) > 0
+
+	if hasDue && newDue != "" {
+		t, err := parseDate(newDue, cfg.DateFormat)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "invalid due date %q (expected %s format)\n", newDue, cfg.DateFormat)
+			os.Exit(1)
+		}
+		newDue = t.Format("2006-01-02")
+	}
+	if hasSched && newSched != "" {
+		t, err := parseDate(newSched, cfg.DateFormat)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "invalid sched date %q (expected %s format)\n", newSched, cfg.DateFormat)
+			os.Exit(1)
+		}
+		newSched = t.Format("2006-01-02")
+	}
 
 	if !hasTitle && !hasDue && !hasSched && !hasTags {
 		fmt.Fprintln(os.Stderr, "nothing to modify")
@@ -442,14 +478,24 @@ func handleCompleted(cfg *Config) {
 		if len(t.Tags) > tagsW {
 			tagsW = len(t.Tags)
 		}
-		if len(t.Deadline) > deadW {
-			deadW = len(t.Deadline)
+		sl := len(formatDateDisplay(t.Scheduled, cfg.DateFormat))
+		if sl > schedW {
+			schedW = sl
 		}
-		if len(t.Scheduled) > schedW {
-			schedW = len(t.Scheduled)
+		dl := len(formatDateDisplay(t.Deadline, cfg.DateFormat))
+		if dl > deadW {
+			deadW = dl
 		}
-		if len(t.Completed) > compW {
-			compW = len(t.Completed)
+		cl := len(t.Completed)
+		if t.Completed != "" {
+			if parts := strings.Fields(t.Completed); len(parts) > 2 {
+				if ct, err := time.Parse("2006-01-02", parts[0]); err == nil {
+					cl = len(ct.Format(goLayout(cfg.DateFormat)) + " " + parts[2])
+				}
+			}
+		}
+		if cl > compW {
+			compW = cl
 		}
 	}
 
@@ -473,9 +519,19 @@ func handleCompleted(cfg *Config) {
 		}
 		fmt.Printf("%s\n", cyan(filepath.Base(f)))
 		for _, t := range fd {
-			sched := dateColor(t.Scheduled)
-			dead := dateColor(t.Deadline)
-			fmt.Printf("%-*s%s%-*s%s%-*s%s%-*s%s%s\n", titleW, t.Title, pad, tagsW, t.Tags, pad, schedW, sched, pad, deadW, dead, pad, t.Completed)
+			schedDisplay := formatDateDisplay(t.Scheduled, cfg.DateFormat)
+			deadDisplay := formatDateDisplay(t.Deadline, cfg.DateFormat)
+			sched := colorDate(t.Scheduled, schedDisplay)
+			dead := colorDate(t.Deadline, deadDisplay)
+			compDisplay := t.Completed
+			if t.Completed != "" {
+				if parts := strings.Fields(t.Completed); len(parts) > 2 {
+					if ct, err := time.Parse("2006-01-02", parts[0]); err == nil {
+						compDisplay = ct.Format(goLayout(cfg.DateFormat)) + " " + parts[2]
+					}
+				}
+			}
+			fmt.Printf("%-*s%s%-*s%s%-*s%s%-*s%s%s\n", titleW, t.Title, pad, tagsW, t.Tags, pad, schedW, sched, pad, deadW, dead, pad, compDisplay)
 			idx++
 		}
 	}
@@ -483,7 +539,7 @@ func handleCompleted(cfg *Config) {
 
 // applyFilters filters a todo slice by tag:, due:before:, due:after:,
 // sched:before:, and sched:after: criteria.
-func applyFilters(todos []Todo, args []string) []Todo {
+func applyFilters(todos []Todo, args []string, dateFormat string) []Todo {
 	var tagFilter []string
 	var dueBefore, dueAfter, schedBefore, schedAfter string
 
@@ -513,10 +569,10 @@ func applyFilters(todos []Todo, args []string) []Todo {
 		if !matchTags(t.Tags, tagFilter) {
 			continue
 		}
-		if !matchDate(t.Deadline, dueBefore, dueAfter) {
+		if !matchDate(t.Deadline, dueBefore, dueAfter, dateFormat) {
 			continue
 		}
-		if !matchDate(t.Scheduled, schedBefore, schedAfter) {
+		if !matchDate(t.Scheduled, schedBefore, schedAfter, dateFormat) {
 			continue
 		}
 		result = append(result, t)
@@ -541,7 +597,7 @@ func matchTags(todoTags string, wanted []string) bool {
 
 // matchDate checks if a date string (e.g. "2026-06-01 Mon") falls within
 // the given before/after bounds. Only the date portion (first 10 chars) is compared.
-func matchDate(dateStr, before, after string) bool {
+func matchDate(dateStr, before, after, dateFormat string) bool {
 	if before == "" && after == "" {
 		return true
 	}
@@ -549,20 +605,20 @@ func matchDate(dateStr, before, after string) bool {
 		return false
 	}
 
-	dateStr = strings.Fields(dateStr)[0]
-	date, err := time.Parse("2006-01-02", dateStr)
+	parts := timeParts(dateStr)
+	date, err := time.Parse("2006-01-02", parts)
 	if err != nil {
 		return false
 	}
 
 	if before != "" {
-		b, err := time.Parse("2006-01-02", before)
+		b, err := parseDate(before, dateFormat)
 		if err != nil || !date.Before(b) {
 			return false
 		}
 	}
 	if after != "" {
-		a, err := time.Parse("2006-01-02", after)
+		a, err := parseDate(after, dateFormat)
 		if err != nil || !date.After(a) {
 			return false
 		}
@@ -571,7 +627,7 @@ func matchDate(dateStr, before, after string) bool {
 }
 
 // colWidths computes the max width for each column across all todos.
-func colWidths(todos []Todo) (id, title, tags, sched, dead int) {
+func colWidths(todos []Todo, dateFormat string) (id, title, tags, sched, dead int) {
 	id, title, tags, sched, dead = 2, len("Title"), len("Tags"), len("Scheduled"), len("Deadline")
 	for i, t := range todos {
 		if len(t.Title) > title {
@@ -580,11 +636,13 @@ func colWidths(todos []Todo) (id, title, tags, sched, dead int) {
 		if len(t.Tags) > tags {
 			tags = len(t.Tags)
 		}
-		if len(t.Scheduled) > sched {
-			sched = len(t.Scheduled)
+		sl := len(formatDateDisplay(t.Scheduled, dateFormat))
+		if sl > sched {
+			sched = sl
 		}
-		if len(t.Deadline) > dead {
-			dead = len(t.Deadline)
+		dl := len(formatDateDisplay(t.Deadline, dateFormat))
+		if dl > dead {
+			dead = dl
 		}
 		w := len(fmt.Sprintf("%d", i+1))
 		if w > id {

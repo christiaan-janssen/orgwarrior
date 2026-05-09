@@ -20,72 +20,111 @@ type Config struct {
 	// DoneLookbackDays controls how many days back to show completed tasks.
 	// Default is 7.
 	DoneLookbackDays int `json:"done_lookback_days"`
+	// DateFormat controls how dates are parsed from user input and displayed.
+	// Supported values: YYYY-MM-DD (default), DD-MM-YYYY, MM-DD-YYYY.
+	DateFormat string `json:"date_format"`
 }
 
-// defaultConfigPath returns the standard location for the config file.
-// Checks the new name (orgwarrior) first, then falls back to the old name (org-cli).
+// defaultConfigPath returns the standard config file location (~/.config/orgwarrior/config.json).
 func defaultConfigPath() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return ""
 	}
-	newPath := filepath.Join(home, ".config", "orgwarrior", "config.json")
-	if _, err := os.Stat(newPath); err == nil {
-		return newPath
-	}
-	oldPath := filepath.Join(home, ".config", "org-cli", "config.json")
-	if _, err := os.Stat(oldPath); err == nil {
-		return oldPath
-	}
-	return newPath
+	return filepath.Join(home, ".config", "orgwarrior", "config.json")
 }
 
-// loadOrCreateConfig reads the config from path. If the file doesn't exist,
-// it creates it with default values (paths: ["~/org/"], default_file: "~/org/inbox.org").
-func loadOrCreateConfig(path string) (*Config, error) {
-	f, err := os.Open(path)
-	if err == nil {
-		defer f.Close()
-		var cfg Config
-		if err := json.NewDecoder(f).Decode(&cfg); err != nil {
-			return nil, fmt.Errorf("invalid config: %w", err)
-		}
-		if cfg.DefaultFile == "" {
-			cfg.DefaultFile = "~/org/inbox.org"
-		}
-		if len(cfg.Files) == 0 {
-			cfg.Files = []string{"inbox.org", "agenda.org"}
-		}
-		return &cfg, nil
+// oldConfigPath returns the legacy config location (~/.config/org-cli/config.json).
+func oldConfigPath() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
 	}
+	return filepath.Join(home, ".config", "org-cli", "config.json")
+}
 
+// loadOrCreateConfig reads the config from the given path. If the file doesn't
+// exist, it tries the old location (~/.config/org-cli/config.json) and migrates
+// it to the new path. If neither exists, it creates a new config at path with
+// default values.
+func loadOrCreateConfig(path string) (*Config, error) {
+	cfg, err := loadConfig(path)
+	if err == nil {
+		return cfg, nil
+	}
 	if !os.IsNotExist(err) {
 		return nil, err
 	}
 
-	cfg := &Config{
-		Paths:       []string{"~/org/"},
-		DefaultFile: "~/org/inbox.org",
-		Files:       []string{"inbox.org", "agenda.org"},
+	// Try migrating from old location
+	old := oldConfigPath()
+	if old != "" && old != path {
+		if cfg, err := loadConfig(old); err == nil {
+			if e := writeConfig(path, cfg); e != nil {
+				return nil, e
+			}
+			return cfg, nil
+		}
 	}
 
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	// Create default config
+	cfg = defaultConfig()
+	if err := writeConfig(path, cfg); err != nil {
 		return nil, err
 	}
+	return cfg, nil
+}
 
-	f, err = os.Create(path)
+// loadConfig reads and decodes a JSON config file, applying defaults for missing fields.
+func loadConfig(path string) (*Config, error) {
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
+	var cfg Config
+	if err := json.NewDecoder(f).Decode(&cfg); err != nil {
+		return nil, fmt.Errorf("invalid config: %w", err)
+	}
+	if cfg.DefaultFile == "" {
+		cfg.DefaultFile = "~/org/inbox.org"
+	}
+	if len(cfg.Files) == 0 {
+		cfg.Files = []string{"inbox.org", "agenda.org"}
+	}
+	if cfg.DoneLookbackDays == 0 {
+		cfg.DoneLookbackDays = 7
+	}
+	if cfg.DateFormat == "" {
+		cfg.DateFormat = "YYYY-MM-DD"
+	}
+	return &cfg, nil
+}
 
+// defaultConfig returns a Config with sensible defaults.
+func defaultConfig() *Config {
+	return &Config{
+		Paths:            []string{"~/org/"},
+		DefaultFile:      "~/org/inbox.org",
+		Files:            []string{"inbox.org", "agenda.org"},
+		DoneLookbackDays: 7,
+		DateFormat:       "YYYY-MM-DD",
+	}
+}
+
+// writeConfig encodes cfg as JSON and writes it to path, creating directories as needed.
+func writeConfig(path string, cfg *Config) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")
-	if err := enc.Encode(cfg); err != nil {
-		return nil, err
-	}
-
-	return cfg, nil
+	return enc.Encode(cfg)
 }
 
 // expandPath resolves a leading "~/" to the user's home directory.
