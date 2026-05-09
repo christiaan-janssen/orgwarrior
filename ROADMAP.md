@@ -13,5 +13,5 @@
 - [ ] **Recurrence** — recurring tasks (sched:+1w)
 - [ ] **Dependencies** — blocked/blocking relationships between tasks
 - [ ] **Done list** — show recently completed tasks
-- [x] **Colors** — colorized terminal output (overdue deadlines in red, today in yellow/green, file headers in cyan)
+- [x] **Colors** — colorized terminal output (past dates red, future dates green, file headers cyan)
 - [ ] **Info/details** — show full details of a single task

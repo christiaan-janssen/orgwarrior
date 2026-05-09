@@ -133,8 +133,8 @@ func handleList(cfg *Config, filterArgs []string) {
 			printHeader()
 		}
 		for _, t := range ft {
-			sched := scheduledColor(t.Scheduled)
-			dead := deadlineColor(t.Deadline)
+			sched := dateColor(t.Scheduled)
+			dead := dateColor(t.Deadline)
 			fmt.Printf("%-*d%s%-*s%s%-*s%s%-*s%s%s\n", idW, idx, pad, titleW, t.Title, pad, tagsW, t.Tags, pad, schedW, sched, pad, dead)
 			idx++
 		}

@@ -66,9 +66,9 @@ func magenta(s string) string {
 	return ansiMagenta + s + ansiReset
 }
 
-// deadlineColor returns a colorized deadline string. Red if overdue,
-// yellow if due today, plain otherwise.
-func deadlineColor(s string) string {
+// dateColor returns a colorized date string. Green if future/upcoming,
+// red if past/overdue.
+func dateColor(s string) string {
 	if s == "" || !useColor {
 		return s
 	}
@@ -80,42 +80,10 @@ func deadlineColor(s string) string {
 	if err != nil {
 		return s
 	}
-	now := time.Now().Truncate(24 * time.Hour)
-	t = t.Truncate(24 * time.Hour)
-	switch {
-	case t.Before(now):
+	if t.Before(time.Now().Truncate(24 * time.Hour)) {
 		return red(s)
-	case t.Equal(now):
-		return yellow(s)
-	default:
-		return s
 	}
-}
-
-// scheduledColor returns a colorized scheduled string. Green if today,
-// yellow if before today (overdue), plain otherwise.
-func scheduledColor(s string) string {
-	if s == "" || !useColor {
-		return s
-	}
-	parts := timeParts(s)
-	if parts == "" {
-		return s
-	}
-	t, err := time.Parse("2006-01-02", parts)
-	if err != nil {
-		return s
-	}
-	now := time.Now().Truncate(24 * time.Hour)
-	t = t.Truncate(24 * time.Hour)
-	switch {
-	case t.Equal(now):
-		return green(s)
-	case t.Before(now):
-		return yellow(s)
-	default:
-		return s
-	}
+	return green(s)
 }
 
 // timeParts extracts the first space-separated token from s.

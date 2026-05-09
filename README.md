@@ -12,7 +12,7 @@ After all the hype about vibecoding, I thought to give it a try. I love Taskwarr
 - **modify** — change a task's title, deadline, scheduled date, or tags
 - **delete** — remove a task (also `del`)
 - **Filters** — `tag:work`, `due:before:2026-07-01`, `due:after:2026-06-01`, `sched:before:...`
-- **Colors** — overdue deadlines in red, today highlighted, file headers in cyan (auto-detects terminal)
+- **Colors** — past dates in red, future dates in green, file headers in cyan (auto-detects terminal)
 - File grouping with per-file headers
 - Parses `DEADLINE`, `SCHEDULED` (inline and on following lines)
 - Parses org tags (`:tag1:tag2:`)
