@@ -1,4 +1,4 @@
-// org-cli is a simple CLI for working with Emacs Org-mode files.
+// orgwarrior is a simple CLI for working with Emacs Org-mode files.
 // It can list TODO items across org files and add new ones.
 package main
 

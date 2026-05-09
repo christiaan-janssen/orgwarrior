@@ -10,7 +10,7 @@ import (
 // It parses due:, sched:, and tags: from the argument list.
 func handleAdd(cfg *Config, args []string) {
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, "usage: org-cli add <title> [due:YYYY-MM-DD] [sched:YYYY-MM-DD] [tags:tag1,tag2]")
+		fmt.Fprintln(os.Stderr, "usage: orgwarrior add <title> [due:YYYY-MM-DD] [sched:YYYY-MM-DD] [tags:tag1,tag2]")
 		os.Exit(1)
 	}
 

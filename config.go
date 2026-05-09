@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// Config holds the user configuration loaded from ~/.config/org-cli/config.json.
+// Config holds the user configuration loaded from ~/.config/orgwarrior/config.json.
 type Config struct {
 	// Paths is a list of directories or files to scan for .org files.
 	Paths []string `json:"paths"`
@@ -17,11 +17,21 @@ type Config struct {
 }
 
 // defaultConfigPath returns the standard location for the config file.
+// Checks the new name (orgwarrior) first, then falls back to the old name (org-cli).
 func defaultConfigPath() string {
-	if home, err := os.UserHomeDir(); err == nil {
-		return filepath.Join(home, ".config", "org-cli", "config.json")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
 	}
-	return ""
+	newPath := filepath.Join(home, ".config", "orgwarrior", "config.json")
+	if _, err := os.Stat(newPath); err == nil {
+		return newPath
+	}
+	oldPath := filepath.Join(home, ".config", "org-cli", "config.json")
+	if _, err := os.Stat(oldPath); err == nil {
+		return oldPath
+	}
+	return newPath
 }
 
 // loadOrCreateConfig reads the config from path. If the file doesn't exist,
