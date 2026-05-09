@@ -20,6 +20,10 @@ func main() {
 		handleAdd(cfg, args[1:])
 		return
 	}
+	if len(args) > 0 && args[0] == "done" {
+		handleDone(cfg, args[1:])
+		return
+	}
 
 	handleList(cfg)
 }

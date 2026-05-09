@@ -12,6 +12,7 @@ import (
 type Todo struct {
 	Title     string // The headline text after "* TODO"
 	File      string // The org file this task came from
+	Line      int    // Line number in the file (1-indexed)
 	Level     int    // Number of leading asterisks (depth in the outline)
 	Deadline  string // DEADLINE value (e.g. "2026-04-24 Fri")
 	Scheduled string // SCHEDULED value (e.g. "2026-05-01 Fri +1w")
@@ -40,7 +41,9 @@ func parseTodos(path string) ([]Todo, error) {
 	var todos []Todo
 	var pending *Todo
 	scanner := bufio.NewScanner(f)
+	lineNum := 0
 	for scanner.Scan() {
+		lineNum++
 		line := scanner.Text()
 		if m := headRe.FindStringSubmatch(line); m != nil {
 			// On encountering a new headline, save any pending todo.
@@ -75,6 +78,7 @@ func parseTodos(path string) ([]Todo, error) {
 				pending = &Todo{
 					Title:     strings.TrimSpace(title),
 					File:      path,
+					Line:      lineNum,
 					Level:     len(m[1]),
 					Deadline:  deadline,
 					Scheduled: scheduled,
