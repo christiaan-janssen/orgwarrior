@@ -28,6 +28,10 @@ func main() {
 		handleModify(cfg, args[1:])
 		return
 	}
+	if len(args) > 0 && (args[0] == "delete" || args[0] == "del") {
+		handleDelete(cfg, args[1:])
+		return
+	}
 	if len(args) > 0 && (args[0] == "--help" || args[0] == "-h") {
 		printHelp()
 		return
@@ -51,6 +55,8 @@ Commands:
     due:YYYY-MM-DD    Update the deadline
     sched:YYYY-MM-DD  Update the scheduled date
     tags:tag1,tag2    Update the tags
+
+  delete <id>       Remove a task (also: del)
 
 Examples:
   orgwarrior

@@ -2,7 +2,7 @@
 
 - [x] **done** — mark a task complete (TODO → DONE in the org file)
 - [x] **modify** — change title, dates, or tags of an existing task
-- [ ] **delete** — remove a task from the file
+- [x] **delete** — remove a task from the file
 - [ ] **Priority** — H/M/L support (Org mode [#A] priority cookies)
 - [ ] **Projects** — group tasks by project (file-per-project or tag)
 - [ ] **Filters** — `tag:work`, `due:before:today`, `priority:H`, etc.

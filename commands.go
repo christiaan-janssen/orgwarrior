@@ -326,6 +326,53 @@ func handleModify(cfg *Config, args []string) {
 	fmt.Printf("Modified: %s\n", t.Title)
 }
 
+// handleDelete removes a task by ID (1-based, from the list output).
+func handleDelete(cfg *Config, args []string) {
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "usage: orgwarrior delete <id>")
+		os.Exit(1)
+	}
+
+	id := 0
+	fmt.Sscanf(args[0], "%d", &id)
+	if id < 1 {
+		fmt.Fprintln(os.Stderr, "invalid id")
+		os.Exit(1)
+	}
+
+	todos, _ := collectTodos(cfg)
+	if id > len(todos) {
+		fmt.Fprintf(os.Stderr, "invalid id %d (range 1-%d)\n", id, len(todos))
+		os.Exit(1)
+	}
+	t := todos[id-1]
+
+	lines, err := readLines(t.File)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error reading %s: %s\n", t.File, err)
+		os.Exit(1)
+	}
+
+	start := t.Line - 1
+	end := start + 1
+	for ; end < len(lines); end++ {
+		trimmed := strings.TrimSpace(lines[end])
+		if trimmed == "" || strings.HasPrefix(trimmed, "*") {
+			break
+		}
+	}
+
+	removed := lines[start:end]
+	lines = append(lines[:start], lines[end:]...)
+
+	if err := writeLines(t.File, lines); err != nil {
+		fmt.Fprintf(os.Stderr, "error writing %s: %s\n", t.File, err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Deleted: %s (%d line(s))\n", t.Title, len(removed))
+}
+
 // colWidths computes the max width for each column across all todos.
 func colWidths(todos []Todo) (id, title, tags, sched, dead int) {
 	id, title, tags, sched, dead = 2, len("Title"), len("Tags"), len("Scheduled"), len("Deadline")
