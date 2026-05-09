@@ -2,6 +2,8 @@
 
 A minimal CLI for working with Emacs Org-mode files, inspired by Taskwarrior.
 
+After all the hype about vibecoding, I thought to give it a try. I love Taskwarrior, but using org to manage my notes I always wanted an cli to manage my todo's.
+
 Lists TODO items across your org files and adds new ones with scheduled dates, deadlines, and tags.
 
 ## Features
@@ -39,12 +41,8 @@ Auto-created at `~/.config/orgwarrior/config.json`:
 }
 ```
 
-| Field | Description |
-|---|---|
-| `paths` | Directories or files to scan for .org files |
-| `default_file` | Where `add` appends new tasks |
-| `files` | Which .org basenames to display (empty = show all) |
-
----
-
-*This project is me trying out vibecoding.*
+| Field          | Description                                        |
+| -------------- | -------------------------------------------------- |
+| `paths`        | Directories or files to scan for .org files        |
+| `default_file` | Where `add` appends new tasks                      |
+| `files`        | Which .org basenames to display (empty = show all) |
