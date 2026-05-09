@@ -24,6 +24,7 @@ ROADMAP.md    — features to add
 - **Go**: standard library only, no external deps, `package main`
 - **Error handling**: print to stderr, `os.Exit(1)` on fatal errors, `continue` on file-level warnings
 - **Comments**: doc comments (`//`) on all exported functions/types
+- **README**: keep README.md in sync — update features and usage for every new command or option
 - **Org parsing**: regex-based; parses `DEADLINE`, `SCHEDULED` inline and on following lines; tags from trailing `:tag:` groups
 - **Config**: auto-created at `~/.config/orgwarrior/config.json` on first run with `paths: ["~/org/"]`, `default_file: "~/org/inbox.org"`, and `files: ["inbox.org", "agenda.org"]`
 - **Output**: aligned table grouped by file, columns: Title, Tags, Scheduled, Deadline
