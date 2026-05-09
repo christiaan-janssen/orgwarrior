@@ -17,6 +17,9 @@ type Config struct {
 	// Files is a whitelist of basenames to track (e.g. ["inbox.org", "agenda.org"]).
 	// Empty means all found .org files are shown.
 	Files []string `json:"files"`
+	// DoneLookbackDays controls how many days back to show completed tasks.
+	// Default is 7.
+	DoneLookbackDays int `json:"done_lookback_days"`
 }
 
 // defaultConfigPath returns the standard location for the config file.

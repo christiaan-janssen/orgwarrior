@@ -32,6 +32,10 @@ func main() {
 		handleDelete(cfg, args[1:])
 		return
 	}
+	if len(args) > 0 && (args[0] == "completed" || args[0] == "comp") {
+		handleCompleted(cfg)
+		return
+	}
 	if len(args) > 0 && (args[0] == "--help" || args[0] == "-h") {
 		printHelp()
 		return
@@ -61,6 +65,7 @@ Commands:
     tags:tag1,tag2    Update the tags
 
   delete <id>       Remove a task (also: del)
+  completed         Show recently completed tasks (also: comp)
 
 Filters (applied to list):
   tag:work            Filter by tag (comma-separated for OR)
@@ -74,6 +79,7 @@ Examples:
   orgwarrior add "Fix the bug"
   orgwarrior add "Write docs" due:2026-06-01 sched:2026-05-30 tags:work,docs
   orgwarrior done 3
+  orgwarrior completed             # show tasks completed this week
   orgwarrior tag:work              # list only tasks tagged "work"
   orgwarrior due:before:2026-07-01 # tasks due before July`)
 }

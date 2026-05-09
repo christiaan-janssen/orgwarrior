@@ -95,6 +95,14 @@ func handleList(cfg *Config, filterArgs []string) {
 		return
 	}
 
+	var filtered []Todo
+	for _, t := range todos {
+		if t.Status == "TODO" {
+			filtered = append(filtered, t)
+		}
+	}
+	todos = filtered
+
 	todos = applyFilters(todos, filterArgs)
 
 	if len(todos) == 0 {
@@ -385,6 +393,92 @@ func handleDelete(cfg *Config, args []string) {
 	}
 
 	fmt.Printf("Deleted: %s (%d line(s))\n", t.Title, len(removed))
+}
+
+// handleCompleted prints recently completed tasks.
+func handleCompleted(cfg *Config) {
+	todos, files := collectTodos(cfg)
+	if len(files) == 0 {
+		fmt.Fprintln(os.Stderr, "no org files found")
+		return
+	}
+
+	lookback := cfg.DoneLookbackDays
+	if lookback < 1 {
+		lookback = 7
+	}
+	since := time.Now().AddDate(0, 0, -lookback).Truncate(24 * time.Hour)
+
+	var done []Todo
+	for _, t := range todos {
+		if t.Status != "DONE" || t.Completed == "" {
+			continue
+		}
+		// Completed format: "2026-05-09 Sat 15:04"
+		parts := strings.Fields(t.Completed)
+		if len(parts) == 0 {
+			continue
+		}
+		closed, err := time.Parse("2006-01-02", parts[0])
+		if err != nil {
+			continue
+		}
+		if closed.Before(since) {
+			continue
+		}
+		done = append(done, t)
+	}
+
+	if len(done) == 0 {
+		fmt.Println("no recently completed tasks")
+		return
+	}
+
+	titleW, tagsW, deadW, schedW, compW := 5, 4, 8, 8, 9
+	for _, t := range done {
+		if len(t.Title) > titleW {
+			titleW = len(t.Title)
+		}
+		if len(t.Tags) > tagsW {
+			tagsW = len(t.Tags)
+		}
+		if len(t.Deadline) > deadW {
+			deadW = len(t.Deadline)
+		}
+		if len(t.Scheduled) > schedW {
+			schedW = len(t.Scheduled)
+		}
+		if len(t.Completed) > compW {
+			compW = len(t.Completed)
+		}
+	}
+
+	pad := "   "
+	fmt.Printf("%-*s%s%-*s%s%-*s%s%-*s%s%s\n", titleW, "Title", pad, tagsW, "Tags", pad, schedW, "Scheduled", pad, deadW, "Deadline", pad, "Completed")
+	fmt.Println(strings.Repeat("-", titleW+tagsW+schedW+deadW+compW+len(pad)*4))
+
+	idx := 1
+	for _, f := range files {
+		var fd []Todo
+		for _, t := range done {
+			if t.File == f {
+				fd = append(fd, t)
+			}
+		}
+		if len(fd) == 0 {
+			continue
+		}
+		if idx > 1 {
+			fmt.Println()
+		}
+		fmt.Printf("%s\n", cyan(filepath.Base(f)))
+		for _, t := range fd {
+			sched := dateColor(t.Scheduled)
+			dead := dateColor(t.Deadline)
+			fmt.Printf("%-*s%s%-*s%s%-*s%s%-*s%s%s\n", titleW, t.Title, pad, tagsW, t.Tags, pad, schedW, sched, pad, deadW, dead, pad, t.Completed)
+			idx++
+		}
+	}
 }
 
 // applyFilters filters a todo slice by tag:, due:before:, due:after:,

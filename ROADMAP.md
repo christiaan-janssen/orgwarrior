@@ -12,6 +12,6 @@
 - [ ] **Statistics** — task counts, burndown summary
 - [ ] **Recurrence** — recurring tasks (sched:+1w)
 - [ ] **Dependencies** — blocked/blocking relationships between tasks
-- [ ] **Done list** — show recently completed tasks
+- [x] **Done list** — show recently completed tasks (configurable lookback via done_lookback_days)
 - [x] **Colors** — colorized terminal output (past dates red, future dates green, file headers cyan)
 - [ ] **Info/details** — show full details of a single task

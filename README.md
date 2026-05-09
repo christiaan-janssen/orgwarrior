@@ -11,6 +11,7 @@ After all the hype about vibecoding, I thought to give it a try. I love Taskwarr
 - **done** — mark a task complete (TODO → DONE + CLOSED timestamp)
 - **modify** — change a task's title, deadline, scheduled date, or tags
 - **delete** — remove a task (also `del`)
+- **completed** — show tasks completed this week (also `comp`)
 - **Filters** — `tag:work`, `due:before:2026-07-01`, `due:after:2026-06-01`, `sched:before:...`
 - **Colors** — past dates in red, future dates in green, file headers in cyan (auto-detects terminal)
 - File grouping with per-file headers
@@ -37,6 +38,7 @@ orgwarrior done 3                                  # mark task #3 as done
 orgwarrior modify 2 "New title"                    # change title
 orgwarrior modify 4 due:2026-07-01                 # change deadline only
 orgwarrior delete 5                                # remove task #5
+orgwarrior completed                              # recently done tasks
 orgwarrior tag:work                                # filter by tag
 orgwarrior due:before:2026-08-01                   # filter by deadline
 ```
@@ -61,6 +63,7 @@ Auto-created at `~/.config/orgwarrior/config.json`:
 
 | Field          | Description                                        |
 | -------------- | -------------------------------------------------- |
-| `paths`        | Directories or files to scan for .org files        |
-| `default_file` | Where `add` appends new tasks                      |
-| `files`        | Which .org basenames to display (empty = show all) |
+| `paths`             | Directories or files to scan for .org files        |
+| `default_file`      | Where `add` appends new tasks                      |
+| `files`             | Which .org basenames to display (empty = show all) |
+| `done_lookback_days`| Days to look back for completed tasks (default 7)  |
