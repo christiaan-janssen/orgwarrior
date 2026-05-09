@@ -29,6 +29,13 @@ orgwarrior add "Fix the bug"            # add a task
 orgwarrior add "Write docs" due:2026-06-01 sched:2026-05-30 tags:work,docs
 ```
 
+## Built with AI
+
+- **Client**: [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Anthropic)
+- **Model**: Claude Sonnet 4
+- **Platform**: [opencode](https://opencode.ai)
+- **Approach**: vibecoding — all code was generated through natural language prompts
+
 ## Config
 
 Auto-created at `~/.config/orgwarrior/config.json`:
