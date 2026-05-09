@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -73,6 +74,16 @@ func handleList(cfg *Config) {
 		return
 	}
 
+	// Filter by the configured file whitelist.
+	var filtered []string
+	for _, f := range files {
+		if len(cfg.Files) > 0 && !contains(cfg.Files, filepath.Base(f)) {
+			continue
+		}
+		filtered = append(filtered, f)
+	}
+	files = filtered
+
 	// Collect all todos to compute column widths.
 	var allTodos []Todo
 	for _, f := range files {
@@ -108,6 +119,18 @@ func handleList(cfg *Config) {
 			fmt.Printf("%-*s%s%-*s%s%-*s%s%s\n", titleW, t.Title, pad, tagsW, t.Tags, pad, schedW, t.Scheduled, pad, t.Deadline)
 		}
 	}
+}
+
+// colWidths computes the maximum display width for each column across all todos,
+// ensuring columns are at least as wide as their headers.
+// contains reports whether s is in the list.
+func contains(list []string, s string) bool {
+	for _, v := range list {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
 
 // colWidths computes the maximum display width for each column across all todos,

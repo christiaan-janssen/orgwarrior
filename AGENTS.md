@@ -25,9 +25,10 @@ ROADMAP.md    — features to add
 - **Error handling**: print to stderr, `os.Exit(1)` on fatal errors, `continue` on file-level warnings
 - **Comments**: doc comments (`//`) on all exported functions/types
 - **Org parsing**: regex-based; parses `DEADLINE`, `SCHEDULED` inline and on following lines; tags from trailing `:tag:` groups
-- **Config**: auto-created at `~/.config/orgwarrior/config.json` on first run with `paths: ["~/org/"]` and `default_file: "~/org/inbox.org"`
+- **Config**: auto-created at `~/.config/orgwarrior/config.json` on first run with `paths: ["~/org/"]`, `default_file: "~/org/inbox.org"`, and `files: ["inbox.org", "agenda.org"]`
 - **Output**: aligned table grouped by file, columns: Title, Tags, Scheduled, Deadline
 - **Add command**: appends `* TODO title :tag1:tag2:` followed by `SCHEDULED:`/`DEADLINE:` lines to `default_file`
+- **File filtering**: config's `files` array controls which .org files to display (matched by basename)
 
 ## Defaults
 - Config path: `~/.config/orgwarrior/config.json`

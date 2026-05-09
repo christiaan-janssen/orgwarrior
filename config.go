@@ -14,6 +14,9 @@ type Config struct {
 	Paths []string `json:"paths"`
 	// DefaultFile is where new tasks are appended by the "add" command.
 	DefaultFile string `json:"default_file"`
+	// Files is a whitelist of basenames to track (e.g. ["inbox.org", "agenda.org"]).
+	// Empty means all found .org files are shown.
+	Files []string `json:"files"`
 }
 
 // defaultConfigPath returns the standard location for the config file.
@@ -47,6 +50,9 @@ func loadOrCreateConfig(path string) (*Config, error) {
 		if cfg.DefaultFile == "" {
 			cfg.DefaultFile = "~/org/inbox.org"
 		}
+		if len(cfg.Files) == 0 {
+			cfg.Files = []string{"inbox.org", "agenda.org"}
+		}
 		return &cfg, nil
 	}
 
@@ -57,6 +63,7 @@ func loadOrCreateConfig(path string) (*Config, error) {
 	cfg := &Config{
 		Paths:       []string{"~/org/"},
 		DefaultFile: "~/org/inbox.org",
+		Files:       []string{"inbox.org", "agenda.org"},
 	}
 
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
