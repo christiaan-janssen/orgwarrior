@@ -31,9 +31,8 @@ orgwarrior add "Write docs" due:2026-06-01 sched:2026-05-30 tags:work,docs
 
 ## Built with AI
 
-- **Client**: [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Anthropic)
-- **Model**: Claude Sonnet 4
-- **Platform**: [opencode](https://opencode.ai)
+- **Client**: [opencode](https://opencode.ai)
+- **Model**: Big Pickel
 - **Approach**: vibecoding — all code was generated through natural language prompts
 
 ## Config
