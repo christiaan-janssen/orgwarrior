@@ -24,6 +24,29 @@ func main() {
 		handleDone(cfg, args[1:])
 		return
 	}
+	if len(args) > 0 && (args[0] == "--help" || args[0] == "-h") {
+		printHelp()
+		return
+	}
 
 	handleList(cfg)
+}
+
+func printHelp() {
+	fmt.Println(`Usage: orgwarrior [command] [args]
+
+Commands:
+  list (default)    List all TODO items
+  add <title>       Add a new task
+    due:YYYY-MM-DD    Set a deadline
+    sched:YYYY-MM-DD  Set a scheduled date
+    tags:tag1,tag2    Add tags
+
+  done <id>         Mark a task as done (use the ID from the list)
+
+Examples:
+  orgwarrior
+  orgwarrior add "Fix the bug"
+  orgwarrior add "Write docs" due:2026-06-01 sched:2026-05-30 tags:work,docs
+  orgwarrior done 3`)
 }
