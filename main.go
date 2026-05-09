@@ -32,7 +32,7 @@ func main() {
 		handleDelete(cfg, args[1:])
 		return
 	}
-	if len(args) > 0 && (args[0] == "completed" || args[0] == "comp") {
+	if len(args) > 0 && (args[0] == "completed" || args[0] == "complete" || args[0] == "comp") {
 		handleCompleted(cfg)
 		return
 	}
@@ -65,7 +65,7 @@ Commands:
     tags:tag1,tag2    Update the tags
 
   delete <id>       Remove a task (also: del)
-  completed         Show recently completed tasks (also: comp)
+  completed         Show recently completed tasks (also: complete, comp)
 
 Filters (applied to list):
   tag:work            Filter by tag (comma-separated for OR)
