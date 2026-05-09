@@ -184,6 +184,148 @@ func handleDone(cfg *Config, args []string) {
 	fmt.Printf("Done: %s\n", t.Title)
 }
 
+// handleModify updates an existing task by ID (1-based, from the list output).
+func handleModify(cfg *Config, args []string) {
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "usage: orgwarrior modify <id> [title] [due:YYYY-MM-DD] [sched:YYYY-MM-DD] [tags:tag1,tag2]")
+		os.Exit(1)
+	}
+
+	id := 0
+	fmt.Sscanf(args[0], "%d", &id)
+	if id < 1 {
+		fmt.Fprintln(os.Stderr, "invalid id")
+		os.Exit(1)
+	}
+
+	todos, _ := collectTodos(cfg)
+	if id > len(todos) {
+		fmt.Fprintf(os.Stderr, "invalid id %d (range 1-%d)\n", id, len(todos))
+		os.Exit(1)
+	}
+	t := todos[id-1]
+
+	modArgs := args[1:]
+	var titleParts []string
+	newDue, newSched, newTags := "", "", ""
+	hasDue, hasSched, hasTags := false, false, false
+	for _, arg := range modArgs {
+		switch {
+		case strings.HasPrefix(arg, "due:"):
+			newDue = strings.TrimPrefix(arg, "due:")
+			hasDue = true
+		case strings.HasPrefix(arg, "sched:"):
+			newSched = strings.TrimPrefix(arg, "sched:")
+			hasSched = true
+		case strings.HasPrefix(arg, "tags:"):
+			newTags = strings.TrimPrefix(arg, "tags:")
+			hasTags = true
+		default:
+			titleParts = append(titleParts, arg)
+		}
+	}
+	hasTitle := len(titleParts) > 0
+
+	if !hasTitle && !hasDue && !hasSched && !hasTags {
+		fmt.Fprintln(os.Stderr, "nothing to modify")
+		os.Exit(1)
+	}
+
+	lines, err := readLines(t.File)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error reading %s: %s\n", t.File, err)
+		os.Exit(1)
+	}
+
+	target := t.Line - 1
+	hm := headRe.FindStringSubmatch(lines[target])
+	if hm == nil {
+		fmt.Fprintf(os.Stderr, "could not parse headline\n")
+		os.Exit(1)
+	}
+	stars := hm[1]
+
+	// Current content is "TODO <title> :tags:"
+	content := strings.TrimPrefix(hm[2], "TODO ")
+
+	// Extract current tags
+	curTags := ""
+	if tg := tagsRe.FindStringSubmatch(content); tg != nil {
+		curTags = tg[1]
+		content = strings.TrimSpace(tagsRe.ReplaceAllString(content, ""))
+	}
+	curTitle := content
+
+	// Build new headline content
+	var newContent string
+	if hasTitle {
+		newContent = strings.Join(titleParts, " ")
+	} else {
+		newContent = curTitle
+	}
+
+	if hasTags {
+		if newTags != "" {
+			parts := strings.Split(newTags, ",")
+			var cleaned []string
+			for _, p := range parts {
+				cleaned = append(cleaned, strings.TrimSpace(p))
+			}
+			newContent += " :" + strings.Join(cleaned, ":") + ":"
+		}
+	} else if curTags != "" {
+		newContent += " " + curTags
+	}
+
+	lines[target] = stars + " TODO " + newContent
+
+	// Update DEADLINE/SCHEDULED on following lines
+	if hasDue || hasSched {
+		foundDue, foundSched := false, false
+		propsEnd := target + 1
+		for ; propsEnd < len(lines); propsEnd++ {
+			trimmed := strings.TrimSpace(lines[propsEnd])
+			if trimmed == "" || strings.HasPrefix(trimmed, "*") {
+				break
+			}
+		}
+
+		for i := target + 1; i < propsEnd; i++ {
+			if hasDue && deadlineRe.MatchString(lines[i]) {
+				if newDue != "" {
+					lines[i] = deadlineRe.ReplaceAllString(lines[i], "DEADLINE: "+formatOrgDate(newDue))
+				}
+				foundDue = true
+			}
+			if hasSched && scheduledRe.MatchString(lines[i]) {
+				if newSched != "" {
+					lines[i] = scheduledRe.ReplaceAllString(lines[i], "SCHEDULED: "+formatOrgDate(newSched))
+				}
+				foundSched = true
+			}
+		}
+
+		var inserts []string
+		if hasSched && !foundSched && newSched != "" {
+			inserts = append(inserts, "  SCHEDULED: "+formatOrgDate(newSched))
+		}
+		if hasDue && !foundDue && newDue != "" {
+			inserts = append(inserts, "  DEADLINE: "+formatOrgDate(newDue))
+		}
+		if len(inserts) > 0 {
+			at := target + 1
+			lines = append(lines[:at], append(inserts, lines[at:]...)...)
+		}
+	}
+
+	if err := writeLines(t.File, lines); err != nil {
+		fmt.Fprintf(os.Stderr, "error writing %s: %s\n", t.File, err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Modified: %s\n", t.Title)
+}
+
 // colWidths computes the max width for each column across all todos.
 func colWidths(todos []Todo) (id, title, tags, sched, dead int) {
 	id, title, tags, sched, dead = 2, len("Title"), len("Tags"), len("Scheduled"), len("Deadline")

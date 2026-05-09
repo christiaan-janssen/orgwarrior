@@ -24,6 +24,10 @@ func main() {
 		handleDone(cfg, args[1:])
 		return
 	}
+	if len(args) > 0 && args[0] == "modify" {
+		handleModify(cfg, args[1:])
+		return
+	}
 	if len(args) > 0 && (args[0] == "--help" || args[0] == "-h") {
 		printHelp()
 		return
@@ -43,6 +47,10 @@ Commands:
     tags:tag1,tag2    Add tags
 
   done <id>         Mark a task as done (use the ID from the list)
+  modify <id>       Change an existing task's title, dates, or tags
+    due:YYYY-MM-DD    Update the deadline
+    sched:YYYY-MM-DD  Update the scheduled date
+    tags:tag1,tag2    Update the tags
 
 Examples:
   orgwarrior
