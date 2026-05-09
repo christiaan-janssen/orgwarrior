@@ -88,10 +88,17 @@ func handleAdd(cfg *Config, args []string) {
 }
 
 // handleList prints all TODO items in an aligned table grouped by file.
-func handleList(cfg *Config) {
+func handleList(cfg *Config, filterArgs []string) {
 	todos, files := collectTodos(cfg)
-	if len(todos) == 0 || len(files) == 0 {
+	if len(files) == 0 {
 		fmt.Fprintln(os.Stderr, "no org files found")
+		return
+	}
+
+	todos = applyFilters(todos, filterArgs)
+
+	if len(todos) == 0 {
+		fmt.Fprintln(os.Stderr, "no tasks match")
 		return
 	}
 
@@ -106,7 +113,12 @@ func handleList(cfg *Config) {
 	idx := 1
 	headerPrinted := false
 	for _, f := range files {
-		ft, _ := parseTodos(f)
+		var ft []Todo
+		for _, t := range todos {
+			if t.File == f {
+				ft = append(ft, t)
+			}
+		}
 		if len(ft) == 0 {
 			continue
 		}
@@ -371,6 +383,95 @@ func handleDelete(cfg *Config, args []string) {
 	}
 
 	fmt.Printf("Deleted: %s (%d line(s))\n", t.Title, len(removed))
+}
+
+// applyFilters filters a todo slice by tag:, due:before:, due:after:,
+// sched:before:, and sched:after: criteria.
+func applyFilters(todos []Todo, args []string) []Todo {
+	var tagFilter []string
+	var dueBefore, dueAfter, schedBefore, schedAfter string
+
+	for _, arg := range args {
+		switch {
+		case strings.HasPrefix(arg, "tag:"):
+			for _, t := range strings.Split(strings.TrimPrefix(arg, "tag:"), ",") {
+				tagFilter = append(tagFilter, strings.TrimSpace(t))
+			}
+		case strings.HasPrefix(arg, "due:before:"):
+			dueBefore = strings.TrimPrefix(arg, "due:before:")
+		case strings.HasPrefix(arg, "due:after:"):
+			dueAfter = strings.TrimPrefix(arg, "due:after:")
+		case strings.HasPrefix(arg, "sched:before:"):
+			schedBefore = strings.TrimPrefix(arg, "sched:before:")
+		case strings.HasPrefix(arg, "sched:after:"):
+			schedAfter = strings.TrimPrefix(arg, "sched:after:")
+		}
+	}
+
+	if len(tagFilter) == 0 && dueBefore == "" && dueAfter == "" && schedBefore == "" && schedAfter == "" {
+		return todos
+	}
+
+	var result []Todo
+	for _, t := range todos {
+		if !matchTags(t.Tags, tagFilter) {
+			continue
+		}
+		if !matchDate(t.Deadline, dueBefore, dueAfter) {
+			continue
+		}
+		if !matchDate(t.Scheduled, schedBefore, schedAfter) {
+			continue
+		}
+		result = append(result, t)
+	}
+	return result
+}
+
+// matchTags checks if any of the wanted tags appear in the todo's comma-separated tags.
+func matchTags(todoTags string, wanted []string) bool {
+	if len(wanted) == 0 {
+		return true
+	}
+	for _, w := range wanted {
+		for _, t := range strings.Split(todoTags, ",") {
+			if strings.TrimSpace(t) == w {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// matchDate checks if a date string (e.g. "2026-06-01 Mon") falls within
+// the given before/after bounds. Only the date portion (first 10 chars) is compared.
+func matchDate(dateStr, before, after string) bool {
+	if before == "" && after == "" {
+		return true
+	}
+	if dateStr == "" {
+		return false
+	}
+
+	dateStr = strings.Fields(dateStr)[0]
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return false
+	}
+
+	if before != "" {
+		b, err := time.Parse("2006-01-02", before)
+		if err != nil || !date.Before(b) {
+			return false
+		}
+	}
+	if after != "" {
+		a, err := time.Parse("2006-01-02", after)
+		if err != nil || !date.After(a) {
+			return false
+		}
+	}
+	return true
 }
 
 // colWidths computes the max width for each column across all todos.

@@ -36,8 +36,12 @@ func main() {
 		printHelp()
 		return
 	}
+	if len(args) > 0 && args[0] == "list" {
+		handleList(cfg, args[1:])
+		return
+	}
 
-	handleList(cfg)
+	handleList(cfg, args)
 }
 
 func printHelp() {
@@ -58,9 +62,18 @@ Commands:
 
   delete <id>       Remove a task (also: del)
 
+Filters (applied to list):
+  tag:work            Filter by tag (comma-separated for OR)
+  due:before:YYYY-MM-DD  Tasks with deadline before a date
+  due:after:YYYY-MM-DD   Tasks with deadline after a date
+  sched:before:...       Filter by scheduled date
+  sched:after:...        Filter by scheduled date
+
 Examples:
   orgwarrior
   orgwarrior add "Fix the bug"
   orgwarrior add "Write docs" due:2026-06-01 sched:2026-05-30 tags:work,docs
-  orgwarrior done 3`)
+  orgwarrior done 3
+  orgwarrior tag:work              # list only tasks tagged "work"
+  orgwarrior due:before:2026-07-01 # tasks due before July`)
 }
