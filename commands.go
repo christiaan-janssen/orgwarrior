@@ -125,7 +125,7 @@ func handleList(cfg *Config, filterArgs []string) {
 		if headerPrinted {
 			fmt.Println()
 		}
-		fmt.Printf("%s\n", filepath.Base(f))
+		fmt.Printf("%s\n", cyan(filepath.Base(f)))
 		if !headerPrinted {
 			printHeader()
 			headerPrinted = true
@@ -133,7 +133,9 @@ func handleList(cfg *Config, filterArgs []string) {
 			printHeader()
 		}
 		for _, t := range ft {
-			fmt.Printf("%-*d%s%-*s%s%-*s%s%-*s%s%s\n", idW, idx, pad, titleW, t.Title, pad, tagsW, t.Tags, pad, schedW, t.Scheduled, pad, t.Deadline)
+			sched := scheduledColor(t.Scheduled)
+			dead := deadlineColor(t.Deadline)
+			fmt.Printf("%-*d%s%-*s%s%-*s%s%-*s%s%s\n", idW, idx, pad, titleW, t.Title, pad, tagsW, t.Tags, pad, schedW, sched, pad, dead)
 			idx++
 		}
 	}
