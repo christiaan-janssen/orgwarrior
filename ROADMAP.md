@@ -7,6 +7,7 @@
 - [ ] **Projects** — group tasks by project (file-per-project or tag)
 - [x] **Filters** — `tag:work`, `due:before:today`, `priority:H`, etc.
 - [ ] **Relative dates** — `due:wed`, `sched:+2d`, `due:fri` for add/modify
+- [ ] **Configurable date format** — support DD-MM-YYYY (European) as alternative to YYYY-MM-DD
 - [ ] **Sort** — sort by due date, priority, urgency, etc.
 - [ ] **Statistics** — task counts, burndown summary
 - [ ] **Recurrence** — recurring tasks (sched:+1w)
