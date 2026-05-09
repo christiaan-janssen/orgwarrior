@@ -6,6 +6,7 @@
 - [ ] **Priority** — H/M/L support (Org mode [#A] priority cookies)
 - [ ] **Projects** — group tasks by project (file-per-project or tag)
 - [ ] **Filters** — `tag:work`, `due:before:today`, `priority:H`, etc.
+- [ ] **Relative dates** — `due:wed`, `sched:+2d`, `due:fri` for add/modify
 - [ ] **Sort** — sort by due date, priority, urgency, etc.
 - [ ] **Statistics** — task counts, burndown summary
 - [ ] **Recurrence** — recurring tasks (sched:+1w)
