@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -45,7 +46,29 @@ func main() {
 		return
 	}
 
+	if len(args) > 0 && !isKnownCommand(args[0]) && !isFilterArg(args[0]) && !startsFlag(args[0]) {
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", args[0])
+		printHelp()
+		os.Exit(1)
+	}
+
 	handleList(cfg, args)
+}
+
+func isKnownCommand(s string) bool {
+	switch s {
+	case "add", "done", "modify", "delete", "del", "completed", "complete", "comp", "list":
+		return true
+	}
+	return false
+}
+
+func isFilterArg(s string) bool {
+	return strings.HasPrefix(s, "tag:") || strings.HasPrefix(s, "due:") || strings.HasPrefix(s, "sched:")
+}
+
+func startsFlag(s string) bool {
+	return strings.HasPrefix(s, "-")
 }
 
 func printHelp() {
