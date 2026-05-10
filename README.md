@@ -12,7 +12,8 @@ After all the hype about vibecoding, I thought to give it a try. I love Taskwarr
 - **modify** — change a task's title, deadline, scheduled date, or tags
 - **delete** — remove a task (also `del`)
 - **completed** — show tasks completed this week (also `comp`)
-- **Filters** — `tag:work`, `due:before:2026-07-01`, `due:after:2026-06-01`, `sched:before:...`
+- **Filters** — `tag:work`, `due:before:+7d`, `due:after:yesterday`, etc.
+- **Relative dates** — `due:fri`, `sched:+2d`, `due:tomorrow`, `sched:before:-1w`
 - **Colors** — past dates in red, future dates in green, file headers in cyan (auto-detects terminal)
 - **Date format** — configurable `date_format` (YYYY-MM-DD, DD-MM-YYYY, MM-DD-YYYY) for input and display
 - File grouping with per-file headers
@@ -33,15 +34,16 @@ go build -o orgwarrior .
 ```
 orgwarrior                                         # list all todos
 orgwarrior add "Fix the bug"                       # add a task
-orgwarrior add "Write docs" due:2026-06-01         # with a deadline
-  sched:2026-05-30 tags:work,docs
+orgwarrior add "Write docs" due:fri sched:+1d      # relative dates
+orgwarrior add "Meeting" due:tomorrow tags:work     # also: today, yesterday, mon..sun
 orgwarrior done 3                                  # mark task #3 as done
 orgwarrior modify 2 "New title"                    # change title
 orgwarrior modify 4 due:2026-07-01                 # change deadline only
 orgwarrior delete 5                                # remove task #5
 orgwarrior completed                              # recently done tasks
 orgwarrior tag:work                                # filter by tag
-orgwarrior due:before:2026-08-01                   # filter by deadline
+orgwarrior due:before:+7d                          # filter by deadline
+orgwarrior sched:after:-1w                         # offsets: +3d, -1w, +2m
 ```
 
 ## Built with AI

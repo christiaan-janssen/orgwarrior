@@ -57,7 +57,7 @@ func handleAdd(cfg *Config, args []string) {
 	if due != "" {
 		t, err := parseDate(due, cfg.DateFormat)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "invalid due date %q (expected %s format)\n", due, cfg.DateFormat)
+			fmt.Fprintf(os.Stderr, "invalid due date %q\n", due)
 			os.Exit(1)
 		}
 		due = t.Format("2006-01-02")
@@ -65,7 +65,7 @@ func handleAdd(cfg *Config, args []string) {
 	if sched != "" {
 		t, err := parseDate(sched, cfg.DateFormat)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "invalid sched date %q (expected %s format)\n", sched, cfg.DateFormat)
+			fmt.Fprintf(os.Stderr, "invalid sched date %q\n", sched)
 			os.Exit(1)
 		}
 		sched = t.Format("2006-01-02")
@@ -270,7 +270,7 @@ func handleModify(cfg *Config, args []string) {
 	if hasDue && newDue != "" {
 		t, err := parseDate(newDue, cfg.DateFormat)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "invalid due date %q (expected %s format)\n", newDue, cfg.DateFormat)
+			fmt.Fprintf(os.Stderr, "invalid due date %q\n", newDue)
 			os.Exit(1)
 		}
 		newDue = t.Format("2006-01-02")
@@ -278,7 +278,7 @@ func handleModify(cfg *Config, args []string) {
 	if hasSched && newSched != "" {
 		t, err := parseDate(newSched, cfg.DateFormat)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "invalid sched date %q (expected %s format)\n", newSched, cfg.DateFormat)
+			fmt.Fprintf(os.Stderr, "invalid sched date %q\n", newSched)
 			os.Exit(1)
 		}
 		newSched = t.Format("2006-01-02")

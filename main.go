@@ -77,14 +77,14 @@ func printHelp() {
 Commands:
   list (default)    List all TODO items
   add <title>       Add a new task
-    due:YYYY-MM-DD    Set a deadline
-    sched:YYYY-MM-DD  Set a scheduled date
+    due:DATE          Set a deadline
+    sched:DATE        Set a scheduled date
     tags:tag1,tag2    Add tags
 
   done <id>         Mark a task as done (use the ID from the list)
   modify <id>       Change an existing task's title, dates, or tags
-    due:YYYY-MM-DD    Update the deadline
-    sched:YYYY-MM-DD  Update the scheduled date
+    due:DATE          Update the deadline
+    sched:DATE        Update the scheduled date
     tags:tag1,tag2    Update the tags
 
   delete <id>       Remove a task (also: del)
@@ -94,19 +94,18 @@ Configuration (~/.config/orgwarrior/config.json):
   date_format    Date display/input format (YYYY-MM-DD, DD-MM-YYYY, MM-DD-YYYY)
                  Default: YYYY-MM-DD
 
-Filters (applied to list):
-  tag:work            Filter by tag (comma-separated for OR)
-  due:before:DATE     Tasks with deadline before a date
-  due:after:DATE      Tasks with deadline after a date
-  sched:before:DATE   Filter by scheduled date
-  sched:after:DATE    Filter by scheduled date
+Dates:
+  Absolute:      YYYY-MM-DD (or DD-MM-YYYY / MM-DD-YYYY per config)
+  Relative:      today, tomorrow, yesterday, mon/tue/wed/thu/fri/sat/sun
+  Offsets:       +3d, +1w, +2m (also -3d, -1w for filters)
 
 Examples:
   orgwarrior
   orgwarrior add "Fix the bug"
-  orgwarrior add "Write docs" due:2026-06-01 sched:2026-05-30 tags:work,docs
+  orgwarrior add "Write docs" due:fri sched:+1d tags:work,docs
   orgwarrior done 3
   orgwarrior completed             # show tasks completed this week
   orgwarrior tag:work              # list only tasks tagged "work"
-  orgwarrior due:before:2026-07-01 # tasks due before July`)
+  orgwarrior due:before:+7d        # tasks due within the next week
+  orgwarrior sched:after:yesterday # tasks scheduled from today onward`)
 }
